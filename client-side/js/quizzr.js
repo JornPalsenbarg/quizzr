@@ -40,7 +40,7 @@ app.config(["$routeProvider", function($rp){
         })
 }]);
 
-app.factory("webSocketProvider", ["$routeParams","quizProvider", "$rootscope",function($routeParams,qp,$rootscope){
+app.factory("webSocketProvider", ["$routeParams","quizProvider", "$rootScope",function($routeParams,qp,$rootScope){
     var socketService = {};
 
     var ws = new WebSocket("ws://localhost:8000/socket");
@@ -53,24 +53,12 @@ app.factory("webSocketProvider", ["$routeParams","quizProvider", "$rootscope",fu
     };
 
     socketService.send = function(theString) {
-        wsConnection.send(theString);
-        console.log("SENT STRING:", theString);
-    };
-
-    socketService.onopen = null;
-
-    wsConnection.onopen = function(arg) {
-        console.log("Socket connection is open!");
-        if(socketService.onopen != null) {
-            socketService.onopen(arg);
-        }
-        $rootScope.$apply();
+        ws.send(theString);
     };
 
     socketService.onclose = null;
 
-    wsConnection.onclose = function(arg) {
-        console.log("Socket connection is closed!", arg);
+    ws.onclose = function(arg) {
         if(socketService.onclose != null) {
             socketService.onclose(arg);
         }
@@ -79,28 +67,16 @@ app.factory("webSocketProvider", ["$routeParams","quizProvider", "$rootscope",fu
 
     socketService.onmessage = null;
 
-    wsConnection.onmessage = function(arg) {
-        console.log("Socket message arrived!", arg.data);
-        var parsedJSON;
-        try {
-            parsedJSON = JSON.parse(arg.data)
-        } catch(err) {
-            if(err instanceof SyntaxError) {
-                parsedJSON = null;
-            } else {
-                throw err;
-            }
-        }
+    ws.onmessage = function(arg) {
         if(socketService.onmessage != null) {
-            socketService.onmessage(arg, parsedJSON);
+            socketService.onmessage(arg.data);
         }
         $rootScope.$apply();
     };
 
     socketService.onerror = null;
 
-    wsConnection.onerror = function(arg) {
-        console.log("Socket connection has an error!", arg);
+    ws.onerror = function(arg) {
         if(socketService.onerror != null) {
             socketService.onerror(arg);
         }
@@ -140,7 +116,7 @@ app.factory("quizProvider", ["$http", "$routeParams", function($http,$rp){
         );
     };
 
-    quizProvider.checkTeamNameAvailable = function(qid, teamname) {
+    quizProvider.getTeam = function(qid, teamname) {
         teamname.replace(" ", "_");
         return new Promise(
             function resolver (resolve, reject) {
@@ -173,11 +149,31 @@ app.factory("quizProvider", ["$http", "$routeParams", function($http,$rp){
         );
     };
 
+    quizProvider.acceptTeam = function(teamname) {
+        var qp = this;
+        teamname = teamname.replace(" ", "_");
+        return new Promise(
+            function(resolve, reject) {
+                $http.put("/api/quiz/" + qp.id + "/team/" + teamname, {
+                    changeType: "accept"
+                })
+                    .success(function(data){
+                        resolve(true);
+                    })
+                    .error(function(err){
+                        console.error(err);
+                        reject(err);
+                    });
+            }
+        );
+    };
+
     quizProvider.getTeams = function() {
         var qp = this;
-        $http.get("/api/quiz/" + $rp.qid + "/teams")
+        $http.get("/api/quiz/" + qp.id + "/teams")
             .success(function(data){
                 if(data) {
+                    qp.teams.length = 0;
                     data.forEach(function(team){
                         qp.teams.push(team);
                     });
@@ -201,7 +197,7 @@ app.controller("homeController", ["quizProvider","$location","$scope",function(q
         if(hc.teamname.indexOf("_") != -1) return alert("You cant use underscores in a team name.");
         qp.id = hc.qid;
 
-        qp.checkTeamNameAvailable(hc.qid,hc.teamname)
+        qp.getTeam(hc.qid,hc.teamname)
             .then(function(data){
                 if(data) {
                     alert("This teamname does already exist.");
@@ -224,7 +220,13 @@ app.controller("homeController", ["quizProvider","$location","$scope",function(q
 }]);
 
 app.controller("applyController", ["quizProvider", "webSocketProvider", function(qp, wsp){
-
+    wsp.onmessage = function(msg) {
+        var data = JSON.parse(msg);
+        if(data.event == "newAccepted") {
+            console.log("new accepted");
+            // todo dingen hier, route aanpassen zodat naam in de url zit.
+        }
+    };
 }]);
 
 app.controller("newQuizController", ["quizProvider","$location","$scope",function(qp, $l, $s){
@@ -243,10 +245,25 @@ app.controller("newQuizController", ["quizProvider","$location","$scope",functio
 
 }]);
 
-app.controller("acceptTeamsController", ["quizProvider", "$routeParams", "$scope", function(qp,$rp, $s){
+app.controller("acceptTeamsController", ["quizProvider", "$routeParams", "webSocketProvider", "$timeout", function(qp,$rp, wsp, $t){
     var atc = this;
     atc.quizID = $rp.qid;
     atc.teams = qp.teams;
 
     qp.getTeams();
+
+    wsp.onmessage = function(msg) {
+        var data = JSON.parse(msg);
+        if(data.event == "newApplicant" || data.event == "newAccepted") {
+            qp.getTeams();
+        }
+    };
+
+    atc.acceptTeam = function(name) {
+        qp.acceptTeam(name)
+            .then(function(data){
+                console.log(data);
+            });
+    };
+
 }]);

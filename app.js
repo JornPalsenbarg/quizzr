@@ -3,8 +3,6 @@ var ws          = require('ws');
 var express     = require('express');
 var path        = require('path');
 
-var event = require('events').EventEmitter();
-
 var apiRouter   = require("./routers/api");
 
 //require("./models/quiz");
@@ -21,7 +19,6 @@ wss.on("connection", function(socket) {
 
     socket.on("message", function(msg){
         var data = JSON.parse(msg);
-
         switch(data.msgtype) {
             case "INITIATE":
                 socket.qid = data.qid;
@@ -29,11 +26,14 @@ wss.on("connection", function(socket) {
         }
     });
 
-    event.on("newApplicant", function(qid) {
-        if(!socket.qid) console.log("QID not found...");
-        if(qid == socket.qid) {
+});
+
+app.on("webSockEvent", function(data) {
+    wss.clients.forEach(function(socket){
+        if(!socket.qid) return false;
+        if(data.qid == socket.qid) {
             socket.send(JSON.stringify({
-                event: "newApplicant"
+                event: data.event
             }));
         }
     });

@@ -2,7 +2,6 @@ var express = require("express");
 var router = express.Router();
 var bodyParser = require("body-parser");
 var Hashids = require("hashids");
-var event = require('events').EventEmitter();
 
 var mongoose = require("mongoose");
 mongoose.connect("mongodb://localhost/quizzr")
@@ -55,10 +54,6 @@ router.get("/quiz/new", function(req,res){
     });
 });
 
-router.put("/quiz/:id", function(req,res){
-    //  make changes to the quiz.
-});
-
 router.get("/quiz/:id/teams", function(req,res){
     Quiz.findOne({
         uid: req.params.id
@@ -68,7 +63,11 @@ router.get("/quiz/:id/teams", function(req,res){
             res.status(500);
             res.send({err: err.message});
         } else {
-            res.send(doc.teams);
+            if(doc && doc.teams) {
+                res.send(doc.teams);
+            } else {
+                res.send("");
+            }
         }
     });
 });
@@ -94,6 +93,10 @@ router.post("/quiz/:id/team", function(req,res){
                    res.status(500);
                    res.send({err: err.message});
                } else {
+                   res.app.emit("webSockEvent", {
+                       qid: req.params.id,
+                       event: "newApplicant"
+                   });
                    res.send({ applied: "yes" });
                }
             });
@@ -127,16 +130,54 @@ router.get("/quiz/:id/team/:name", function(req,res){
     });
 });
 
-router.put("/quiz/:id/team/:name", function(req,res){
-    // things.
-});
+router.put("/quiz/:id/team/:name", function(req,res) {
+    if(!req.body.changeType) return console.log("Error: No changetype served.");
+    req.params.name.replace("_", " ");
 
-router.get("/quiz/:id/question", function(req,res){
-    // get the current question
-});
-
-router.post("/quiz/:id/answer", function(req,res){
-    // post your answer to the question by a team
+    switch(req.body.changeType) {
+        case "accept":
+            Quiz.findOne({
+                $and: [
+                    {
+                        uid: req.params.id
+                    },
+                    {
+                        teams: {
+                            $elemMatch: {
+                                name: req.params.name
+                            }
+                        }
+                    }
+                ]
+            }, function(err, docs){
+                if(err) {
+                    console.log(err);
+                    res.status(500);
+                    res.send({err: err.message});
+                } else {
+                    docs.teams.forEach(function(team) {
+                        if(team.name == req.params.name) {
+                            docs.teams[docs.teams.indexOf(team)].accepted = true;
+                        }
+                    });
+                    docs.save(function(err){
+                        if(err){
+                            res.status(500);
+                            res.send({err: err.message});
+                        } else {
+                            res.app.emit("webSockEvent", {
+                                qid: req.params.id,
+                                event: "newAccepted"
+                            });
+                            res.send({
+                                accepted: "yes"
+                            });
+                        }
+                    });
+                }
+            });
+            break;
+    }
 });
 
 module.exports = router;
