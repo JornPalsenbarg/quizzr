@@ -1,0 +1,29 @@
+[
+    {
+        _id: String,
+        started: Boolean,
+        ended: Boolean,
+        startDate: Date,
+        endDate: Date,
+        totalrounds: Number,
+        teams: [
+            {
+                name: String,
+                roundpoints: Number,
+                currentanswer: String,
+                rightanswers: Number
+            }
+        ],
+        currentround: {
+            categories: [ObjectId],
+            donequestions: [String],
+            currentcategory,
+            currentquestion
+        }
+    },
+    {
+        _id: ObjectId,
+        name: String,
+        questions: [String]
+    }
+]

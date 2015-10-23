@@ -1,0 +1,58 @@
+<div class="row">
+    <div class="col m12">
+        <h1 style="text-align: center;margin-top: 50px;color: teal;">QuizZr</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col m12">
+        <h5 style="text-align: center;">Choose 3 categories</h5>
+    </div>
+</div>
+
+<form>
+    <div class="row">
+        <div class="input-field col m6 offset-m3" style="margin-top:35px;">
+            <select>
+                <option value="" disabled selected>Choose your category</option>
+                <option value="1">Option 1</option>
+                <option value="2">Option 2</option>
+                <option value="3">Option 3</option>
+            </select>
+            <label>Head category</label>
+        </div>
+    </div>
+
+    <div class="row" style="margin-top:35px">
+        <div class="input-field col m4 offset-m1">
+            <select>
+                <option value="" disabled selected>Choose your category</option>
+                <option value="1">Option 1</option>
+                <option value="2">Option 2</option>
+                <option value="3">Option 3</option>
+            </select>
+            <label>Second category</label>
+        </div>
+        <div class="input-field col m4 offset-m2">
+            <select>
+                <option value="" disabled selected>Choose your category</option>
+                <option value="1">Option 1</option>
+                <option value="2">Option 2</option>
+                <option value="3">Option 3</option>
+            </select>
+            <label>Third category</label>
+        </div>
+    </div>
+
+    <div class="row">
+        <button class="btn btn-large col m6 offset-m3 waves-effect waves-light" type="submit" style="margin-top: 30px;">Start the round!</button>
+        <span class="col m12 center-align" style="padding-top: 30px;padding-bottom:30px;">Or</span>
+        <button class="btn btn-large col m6 offset-m3 waves-effect waves-light">Start the round!</button>
+    </div>
+</form>
+
+<script>
+    $(document).ready(function() {
+        $('select').material_select();
+    });
+</script>

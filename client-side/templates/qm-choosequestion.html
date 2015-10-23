@@ -1,0 +1,56 @@
+<div class="row">
+    <div class="col m12">
+        <h1 style="text-align: center;margin-top: 50px;color: teal;">QuizZr</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col m12">
+        <h5 style="text-align: center;">Choose a question</h5>
+    </div>
+</div>
+
+<form>
+    <div class="row">
+        <div class="input-field col m6 offset-m3" style="margin-top:35px;">
+            <select>
+                <option value="" selected>None</option>
+                <option value="1">Option 1</option>
+                <option value="2">Option 2</option>
+                <option value="3">Option 3</option>
+            </select>
+            <label>Questions from x</label>
+        </div>
+    </div>
+
+    <div class="row" style="margin-top:35px">
+        <div class="input-field col m4 offset-m1">
+            <select>
+                <option value="" disabled selected>None</option>
+                <option value="1">Option 1</option>
+                <option value="2">Option 2</option>
+                <option value="3">Option 3</option>
+            </select>
+            <label>Questions from y</label>
+        </div>
+        <div class="input-field col m4 offset-m2">
+            <select>
+                <option value="" disabled selected>None</option>
+                <option value="1">Option 1</option>
+                <option value="2">Option 2</option>
+                <option value="3">Option 3</option>
+            </select>
+            <label>Questions from z</label>
+        </div>
+    </div>
+
+    <div class="row">
+        <button class="btn btn-large col m6 offset-m3 waves-effect waves-light" type="submit" style="margin-top: 30px;">Select</button>
+    </div>
+</form>
+
+<script>
+    $(document).ready(function() {
+        $('select').material_select();
+    });
+</script>

@@ -1,0 +1,32 @@
+<div class="row">
+    <div class="col s12">
+        <h1 style="text-align: center;margin-top: 50px;color: teal;">QuizZr</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col s12">
+        <form class="col s10 offset-s1" style="text-align: center" ng-submit="hc.applyToQuiz()">
+            <div class="input-field" style="margin-top:45px;">
+                <input type="text" class="validate" ng-model="hc.qid"/>
+                <label>QuizZ ID</label>
+            </div>
+
+            <div class="input-field">
+                <input type="text" class="validate" ng-model="hc.teamname" length="22"/>
+                <label>Team name</label>
+            </div>
+
+            <button class="btn waves-effect waves-light" type="submit" style="margin-top: 40px">
+                &nbsp;&nbsp;&nbsp;Apply&nbsp;&nbsp;&nbsp;
+            </button>
+
+        </form>
+    </div>
+</div>
+
+<div class="fixed-action-btn" style="bottom: 24px; right: 24px;">
+    <a href="#/new" class="btn-floating btn-large waves-effect waves-light red">
+        <i class="large material-icons">add</i>
+    </a>
+</div>

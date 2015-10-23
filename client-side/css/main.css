@@ -1,0 +1,13 @@
+html {
+    background-color: #F5CE22;
+    font-family: arial, sans-serif;
+}
+
+h1 {
+    /*color: white;*/
+    font-size: 42px;
+}
+
+input[type="text"] {
+    text-align: center;
+}

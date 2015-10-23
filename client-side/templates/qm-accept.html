@@ -1,0 +1,49 @@
+<div class="row">
+    <div class="col m12">
+        <h1 style="text-align: center;margin-top: 50px;color: teal;">QuizZr</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col m12" style="text-align: center">
+        <h4 class="col m3 offset-m3">ID:</h4>
+
+        <div class="input-field col m3">
+            <input style="font-size:30px;" disabled type="text" ng-model="atc.quizID" />
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <h5 class="col m12">Accepted teams</h5>
+
+    <div class="col m6" ng-repeat="team in atc.teams" ng-show="team.accepted">
+        <div class="card-panel teal">
+            <h5 class="white-text">{{team.name}}</h5>
+        </div>
+    </div>
+
+</div>
+
+<div class="row">
+    <div class="col m12">
+        <button class="btn btn-large col m4 offset-m4 red waves-effect waves-light" style="margin-top:20px;margin-bottom:20px;">Start your QuizZ!</button>
+    </div>
+</div>
+
+<div class="row">
+    <h5 class="col m12">New teams</h5>
+
+    <div class="col m6" ng-repeat="team in atc.teams" ng-show="!team.accepted">
+        <div class="card teal">
+            <div class="card-content white-text">
+                <span class="card-title">{{ team.name }}</span>
+            </div>
+            <div class="card-action">
+                <a>A c c e p t</a>
+                <a>D e n y</a>
+            </div>
+        </div>
+    </div>
+
+</div>
