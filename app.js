@@ -29,12 +29,17 @@ wss.on("connection", function(socket) {
 });
 
 app.on("webSockEvent", function(data) {
+    var sendData = {};
+    if(data.event) {
+        sendData.event = data.event;
+    }
+    if(data.extra) {
+        sendData.extra = data.extra;
+    }
     wss.clients.forEach(function(socket){
         if(!socket.qid) return false;
         if(data.qid == socket.qid) {
-            socket.send(JSON.stringify({
-                event: data.event
-            }));
+            socket.send(JSON.stringify(sendData));
         }
     });
 });

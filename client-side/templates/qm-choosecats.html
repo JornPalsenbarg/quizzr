@@ -10,46 +10,38 @@
     </div>
 </div>
 
-<form>
-    <div class="row">
-        <div class="input-field col m6 offset-m3" style="margin-top:35px;">
-            <select>
-                <option value="" disabled selected>Choose your category</option>
-                <option value="1">Option 1</option>
-                <option value="2">Option 2</option>
-                <option value="3">Option 3</option>
-            </select>
-            <label>Head category</label>
-        </div>
+<div class="row">
+    <div class="input-field col m6 offset-m3" style="margin-top:35px;">
+        <select ng-model="ccc.firstCat">
+            <option value="" disabled selected>Choose your category</option>
+            <option ng-repeat="cat in ccc.categories" value="{{cat._id}}">{{cat.category}}</option>
+        </select>
+        <label>Head category</label>
     </div>
+</div>
 
-    <div class="row" style="margin-top:35px">
-        <div class="input-field col m4 offset-m1">
-            <select>
-                <option value="" disabled selected>Choose your category</option>
-                <option value="1">Option 1</option>
-                <option value="2">Option 2</option>
-                <option value="3">Option 3</option>
-            </select>
-            <label>Second category</label>
-        </div>
-        <div class="input-field col m4 offset-m2">
-            <select>
-                <option value="" disabled selected>Choose your category</option>
-                <option value="1">Option 1</option>
-                <option value="2">Option 2</option>
-                <option value="3">Option 3</option>
-            </select>
-            <label>Third category</label>
-        </div>
+<div class="row" style="margin-top:35px">
+    <div class="input-field col m4 offset-m1">
+        <select ng-model="ccc.secondCat">
+            <option value="" disabled selected>Choose your category</option>
+            <option ng-repeat="cat in ccc.categories" value="{{cat._id}}">{{cat.category}}</option>
+        </select>
+        <label>Second category</label>
     </div>
+    <div class="input-field col m4 offset-m2">
+        <select ng-model="ccc.thirdCat">
+            <option value="" disabled selected>Choose your category</option>c
+            <option ng-repeat="cat in ccc.categories" value="{{cat._id}}">{{cat.category}}</option>
+        </select>
+        <label>Third category</label>
+    </div>
+</div>
 
-    <div class="row">
-        <button class="btn btn-large col m6 offset-m3 waves-effect waves-light" type="submit" style="margin-top: 30px;">Start the round!</button>
-        <span class="col m12 center-align" style="padding-top: 30px;padding-bottom:30px;">Or</span>
-        <button class="btn btn-large col m6 offset-m3 waves-effect waves-light">Start the round!</button>
-    </div>
-</form>
+<div class="row">
+    <button class="btn btn-large col m6 offset-m3 waves-effect waves-light" style="margin-top: 30px;" ng-click="ccc.startRound()">Start the round!</button>
+    <span class="col m12 center-align" style="padding-top: 30px;padding-bottom:30px;">Or</span>
+    <button class="btn btn-large col m6 offset-m3 waves-effect waves-light" ng-click="ccc.endRound()">Start the round!</button>
+</div>
 
 <script>
     $(document).ready(function() {

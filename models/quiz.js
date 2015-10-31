@@ -40,10 +40,19 @@ var QuizSchema = new Schema({
         rightanswers: Number
     }],
     currentround: {
-        categories: [Schema.Types.ObjectId],
+        categories: {
+            first: Schema.Types.ObjectId,
+            second: Schema.Types.ObjectId,
+            third: Schema.Types.ObjectId
+        },
         pastquestions: [String],
         currentcategory: String,
-        currentquestion: String
+        questionopen: Boolean,
+        currentquestion: {
+            question: String,
+            answer: String
+        },
+        totalquestions: Number
     }
 });
 

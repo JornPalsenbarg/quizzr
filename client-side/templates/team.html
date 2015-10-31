@@ -2,22 +2,46 @@
     <div class="col s12">
         <h1 style="text-align: center;margin-top: 50px;color: teal;">QuizZr</h1>
 
-        <h5 style="text-align: center;">What is the answer to this question?</h5>
+        <h5 style="text-align: center;" ng-show="play.questionopen">{{ play.currentquestion }}</h5>
     </div>
 </div>
 
-<div class="row">
+<div class="row center-align" ng-show="play.questionopen">
+    <div class="col s10 offset-s1">
+        <div class="input-field">
+            <input type="text" ng-model="play.scopeanswer" class="validate"/>
+            <label>Answer</label>
+        </div>
+
+        <button class="btn waves-effect waves-light" ng-click="play.postAnswer(play.scopeanswer)" style="margin-top: 40px">
+            &nbsp;&nbsp;&nbsp;Submit&nbsp;&nbsp;&nbsp;
+        </button>
+    </div>
+</div>
+
+<div class="row center-align" ng-show="play.currentanswer != ''">
     <div class="col s12">
-        <form class="col s10 offset-s1" style="text-align: center">
-            <div class="input-field">
-                <input type="text" class="validate"/>
-                <label>Answer</label>
-            </div>
+        <p>current answer:</p>
+        <p>{{play.currentanswer}}</p>
+    </div>
+</div>
 
-            <button class="btn waves-effect waves-light" type="submit" style="margin-top: 40px">
-                &nbsp;&nbsp;&nbsp;Submit&nbsp;&nbsp;&nbsp;
-            </button>
+<div class="row center-align" ng-show="!play.questionopen">
+    <div class="preloader-wrapper big active">
+        <div class="spinner-layer spinner-red-only">
+            <div class="circle-clipper left">
+                <div class="circle"></div>
+            </div><div class="gap-patch">
+            <div class="circle"></div>
+        </div><div class="circle-clipper right">
+            <div class="circle"></div>
+        </div>
+        </div>
+    </div>
+</div>
 
-        </form>
+<div class="row center-align" ng-show="!play.questionopen">
+    <div class="col s12">
+        <p>Waiting on a question from the QuizZ master.</p>
     </div>
 </div>

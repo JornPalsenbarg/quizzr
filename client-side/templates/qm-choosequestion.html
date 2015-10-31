@@ -10,44 +10,36 @@
     </div>
 </div>
 
-<form>
-    <div class="row">
-        <div class="input-field col m6 offset-m3" style="margin-top:35px;">
-            <select>
-                <option value="" selected>None</option>
-                <option value="1">Option 1</option>
-                <option value="2">Option 2</option>
-                <option value="3">Option 3</option>
-            </select>
-            <label>Questions from x</label>
-        </div>
+<div class="row">
+    <div class="input-field col m6 offset-m3" style="margin-top:35px;">
+        <select ng-model="cqc.firstC">
+            <option value="" selected>None</option>
+            <option ng-repeat="q in cqc.firstQ.questions" value="{{q}}">{{ q.question }}</option>
+        </select>
+        <label>Questions from {{cqc.firstQ.category}}</label>
     </div>
+</div>
 
-    <div class="row" style="margin-top:35px">
-        <div class="input-field col m4 offset-m1">
-            <select>
-                <option value="" disabled selected>None</option>
-                <option value="1">Option 1</option>
-                <option value="2">Option 2</option>
-                <option value="3">Option 3</option>
-            </select>
-            <label>Questions from y</label>
-        </div>
-        <div class="input-field col m4 offset-m2">
-            <select>
-                <option value="" disabled selected>None</option>
-                <option value="1">Option 1</option>
-                <option value="2">Option 2</option>
-                <option value="3">Option 3</option>
-            </select>
-            <label>Questions from z</label>
-        </div>
+<div class="row" style="margin-top:35px">
+    <div class="input-field col m4 offset-m1">
+        <select ng-model="cqc.secondC">
+            <option value="" selected>None</option>
+            <option ng-repeat="q in cqc.secondQ.questions" value="{{q}}">{{ q.question }}</option>
+        </select>
+        <label>Questions from {{cqc.secondQ.category}}</label>
     </div>
+    <div class="input-field col m4 offset-m2">
+        <select ng-model="cqc.thirdC">
+            <option value="" selected>None</option>
+            <option ng-repeat="q in cqc.thirdQ.questions" value="{{q}}">{{ q.question }}</option>
+        </select>
+        <label>Questions from {{cqc.thirdQ.category}}</label>
+    </div>
+</div>
 
-    <div class="row">
-        <button class="btn btn-large col m6 offset-m3 waves-effect waves-light" type="submit" style="margin-top: 30px;">Select</button>
-    </div>
-</form>
+<div class="row">
+    <button class="btn btn-large col m6 offset-m3 waves-effect waves-light" style="margin-top: 30px;" ng-click="cqc.chooseQuestion()">Select</button>
+</div>
 
 <script>
     $(document).ready(function() {
