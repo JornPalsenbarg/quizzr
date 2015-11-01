@@ -1,0 +1,75 @@
+<div class="row">
+    <div class="col l12">
+        <h1 style="text-align: center;margin-top: 50px;color: teal;">QuizZr Scoreboard</h1>
+    </div>
+</div>
+
+<div class="row" style="margin-top:30px;" ng-show="ssc.quiz.ended">
+    <div class="col l12 center-align">
+        <h1>Ended</h1>
+    </div>
+</div>
+
+<div class="row" style="margin-top:30px;" ng-show="!ssc.quiz.started && !ssc.quiz.ended">
+    <div class="col l12 center-align">
+        <h4>To register your team for the QuizZ, go to QuizZr and fill in the following id and your teamname.</h4>
+    </div>
+</div>
+
+<div class="row" style="margin-top:50px;" ng-show="!ssc.quiz.started && !ssc.quiz.ended">
+    <div class="col l6 offset-l3">
+        <div class="card-panel teal white-text center-align">
+            <h2>{{ ssc.quiz.uid }}</h2>
+        </div>
+    </div>
+</div>
+
+<div class="row center-align" ng-show="ssc.quiz.started && !ssc.quiz.ended">
+    <div class="col l2 card teal" ng-repeat="team in ssc.quiz.teams">
+        <div class="card-content white-text">
+            <span class="card-title">{{team.name}}</span>
+            <p>{{team.roundpoints}} RP</p>
+        </div>
+    </div>
+</div>
+
+<div class="row" ng-show="ssc.quiz.started && !ssc.quiz.ended">
+    <div class="card teal col l2 offset-l5 center-align">
+        <div class="card-content">
+            <span class="white-text">
+                Question {{ssc.getQuestionNumber()}}/12
+            </span>
+        </div>
+    </div>
+</div>
+
+<div class="row" ng-show="ssc.quiz.currentround.questionopen && !ssc.quiz.ended">
+    <div class="card teal col l10 offset-l1">
+        <div class="card-content">
+            <span class="white-text">
+                category: {{ssc.quiz.currentround.currentcategory}}
+                <h4>Question: {{ssc.quiz.currentround.currentquestion.question}}</h4>
+            </span>
+        </div>
+    </div>
+</div>
+
+<div class="row" ng-show="ssc.quiz.currentround.questionopen && !ssc.quiz.ended">
+    <div class="card teal col l8 offset-l2">
+        <div class="card-content">
+            <span class="white-text">
+                teams who have submitted:
+                <h5><span ng-repeat="team in ssc.quiz.teams" ng-show="team.currentanswer">{{team.name}}, </span></h5>
+            </span>
+        </div>
+    </div>
+</div>
+
+<div class="row" ng-show="ssc.quiz.started && !ssc.quiz.currentround.questionopen && !ssc.quiz.ended && ssc.quiz.currentround.totalquestions && ssc.quiz.currentround.totalquestions != 0 && !ssc.next">
+    <div class="card col l4 white-text" ng-class="ssc.getTeamColor(team)" ng-repeat="team in ssc.quiz.teams">
+        <div class="card-content">
+            <span class="card-title">{{team.name}}'s answer:</span>
+            <p>{{team.currentanswer}}</p>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,30 @@
+{
+  "name": "quizzr",
+  "version": "1.0.0",
+  "description": "quizzr school",
+  "main": "app.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "dependencies": {
+    "body-parser": "^1.14.1",
+    "express": "^4.13.3",
+    "hashids": "^1.0.2",
+    "mongoose": "^4.1.11",
+    "ws": "^0.8.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JornPalsenbarg/quizzr.git"
+  },
+  "author": "Jorn Palsenbarg",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/JornPalsenbarg/quizzr/issues"
+  },
+  "homepage": "https://github.com/JornPalsenbarg/quizzr#readme"
+}

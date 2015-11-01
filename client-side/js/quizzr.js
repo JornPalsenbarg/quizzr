@@ -43,7 +43,14 @@ app.config(["$routeProvider", function($rp){
             controllerAs: "cqc"
         })
         .when("/:qid/quizmaster/judgeanswers", {
-            templateUrl: "templates/qm-judgeanswers.html"
+            templateUrl: "templates/qm-judgeanswers.html",
+            controller: "judgecontroller",
+            controllerAs: "jc"
+        })
+        .when("/:qid/scoreboard", {
+            templateUrl: "templates/sb-start.html",
+            controller: "scoreboardStartController",
+            controllerAs: "ssc"
         })
         .otherwise({
             redirectTo: "/"
@@ -329,6 +336,108 @@ app.factory("quizProvider", ["$http", "$routeParams", function($http,$rp){
         );
     };
 
+    quizProvider.approveAnswer = function(name) {
+        name = name.replace(" ", "_");
+        return new Promise(
+            function(resolve,reject) {
+                $http.put("/api/quiz/" + $rp.qid + "/team/" + name, {
+                    changeType: "judgeAnswer",
+                    judge: "right"
+                })
+                    .success(function(data){
+                        resolve(data);
+                    })
+                    .error(function(err){
+                        reject(err);
+                    })
+            }
+        );
+    };
+
+    quizProvider.rejectAnswer = function(name) {
+        name = name.replace(" ", "_");
+        return new Promise(
+            function(resolve,reject) {
+                $http.put("/api/quiz/" + $rp.qid + "/team/" + name, {
+                    changeType: "judgeAnswer",
+                    judge: "wrong"
+                })
+                    .success(function(data){
+                        resolve(data);
+                    })
+                    .error(function(err){
+                        reject(err);
+                    })
+            }
+        );
+    };
+
+    quizProvider.stopAnswerAccepting = function() {
+        return new Promise(
+            function(resolve, reject) {
+                $http.put("/api/quiz/" + $rp.qid, {
+                    method: "stopAnswerAccepting"
+                })
+                    .success(function(data){
+                        resolve(data);
+                    })
+                    .error(function(err){
+                        reject(err);
+                    });
+            }
+        );
+    };
+
+    quizProvider.next = function() {
+        return new Promise(
+            function(resolve, reject) {
+                $http.put("/api/quiz/" + $rp.qid, {
+                    method: "next"
+                })
+                    .success(function(data){
+                        resolve(data);
+                    })
+                    .error(function(err){
+                        reject(err);
+                    })
+            }
+        );
+    };
+
+    quizProvider.endGame = function() {
+        return new Promise(
+            function(resolve, reject) {
+                $http.put("/api/quiz/" + $rp.qid, {
+                    method: "end"
+                })
+                    .success(function(data){
+                        resolve(data);
+                    })
+                    .error(function(err){
+                        reject(err);
+                    })
+            }
+        );
+    };
+
+    quizProvider.getQuiz = function() {
+        return new Promise(
+            function(resolve,reject) {
+                $http.get("/api/quiz/" +$rp.qid)
+                    .success(function(data) {
+                        if(!data.err) {
+                            resolve(data);
+                        } else {
+                            reject(data.err);
+                        }
+                    })
+                    .error(function(data){
+                        reject(data);
+                    });
+            }
+        );
+    };
+
     return quizProvider;
 }]);
 
@@ -395,6 +504,11 @@ app.controller("playController", ["quizProvider","$routeParams","$location", "$t
                 $timeout(function(){
                     $location.path("/");
                 });
+            } else if(data.err && data.err == "GAME ENDED") {
+                Materialize.toast('This game had ended', 4000);
+                $timeout(function(){
+                    $location.path("/");
+                });
             }
         });
 
@@ -414,6 +528,7 @@ app.controller("playController", ["quizProvider","$routeParams","$location", "$t
         qp.postAnswer(answer)
             .then(function(data){
                 play.currentanswer = answer;
+                play.scopeanswer = "";
             })
             .catch(function(err){
                 console.error(err);
@@ -436,6 +551,10 @@ app.controller("playController", ["quizProvider","$routeParams","$location", "$t
                 });
         } else if(data.event == "questionStopped") {
             play.questionopen = false;
+            play.currentanswer = "";
+            $scope.$apply();
+        } else if(data.event == "gameEnded") {
+            $location.path("/");
             $scope.$apply();
         }
     }
@@ -540,9 +659,17 @@ app.controller("chooseCategoriesController", ["quizProvider", "$scope", "$locati
             })
     };
 
-    ccc.endRound = function() {
-        // TODO end round
-        console.log("YOU TRIED TO END THE ROUND.");
+    ccc.endGame = function() {
+        qp.endGame()
+            .then(function(data){
+                if(data.gameEnded) {
+                    $l.path("/");
+                    $scope.$apply();
+                }
+            })
+            .catch(function(err){
+                console.error(err);
+            })
     };
 
 }]);
@@ -570,17 +697,21 @@ app.controller("chooseQuestionController", ["quizProvider","$scope", "$location"
         var question = "";
         if(cqc.firstC == "" && cqc.secondC == "" && cqc.thirdC != "") {
             question = cqc.thirdC;
+            question = JSON.parse(question);
+            question.category = cqc.thirdQ.category;
         } else if(cqc.firstC == "" && cqc.secondC != "" && cqc.thirdC == "") {
             question = cqc.secondC;
+            question = JSON.parse(question);
+            question.category = cqc.secondQ.category;
         } else if(cqc.firstC != "" && cqc.secondC == "" && cqc.thirdC == "") {
             question = cqc.firstC;
+            question = JSON.parse(question);
+            question.category = cqc.firstQ.category;
         } else {
             return Materialize.toast('You have to choose a minimum and maximum of 1 question.', 4000);
         }
-        question = JSON.parse(question);
         qp.chooseQuestion(question)
             .then(function(data){
-                console.log(data);
                 $l.path("/" + $rp.qid + "/quizmaster/judgeanswers");
                 $scope.$apply();
             })
@@ -588,4 +719,131 @@ app.controller("chooseQuestionController", ["quizProvider","$scope", "$location"
                 console.error(err);
             })
     };
+}]);
+
+app.controller("judgecontroller", ["quizProvider", "webSocketProvider", "$scope", "$location", "$routeParams", function(qp, wsp,$scope, $location, $rp){
+    var jc = this;
+    qp.getTeams();
+    jc.teams = qp.teams;
+
+    jc.stillAccepting = true;
+    jc.currentquestion = {};
+
+    wsp.onmessage = function(msg) {
+        var data = JSON.parse(msg);
+        if(data.event == "newAnswer") {
+            qp.getTeams();
+        }
+    };
+
+    qp.getCurrentQuestion()
+        .then(function(data){
+            jc.currentquestion = data;
+            $scope.$apply();
+        })
+        .catch(function(err){
+            console.error(err);
+        });
+
+    jc.getCardClass = function(judged) {
+        if(judged == "wrong") {
+            return "red";
+        } else if(judged == "right") {
+            return "green";
+        } else {
+            return "teal";
+        }
+    };
+
+    jc.approveAnswer = function(name) {
+        qp.approveAnswer(name)
+            .then(function(data){
+                qp.getTeams();
+            })
+            .catch(function(err){
+                console.error(err);
+            })
+    };
+
+    jc.rejectAnswer = function(name) {
+        qp.rejectAnswer(name)
+            .then(function(data){
+                qp.getTeams();
+            })
+            .catch(function(err){
+                console.error(err);
+            });
+    };
+
+    jc.stopAccepting = function() {
+        qp.stopAnswerAccepting()
+            .then(function(data){
+                jc.stillAccepting = false;
+            })
+            .catch(function(err){
+                console.error(err);
+            });
+    };
+
+    jc.next = function() {
+        qp.next()
+            .then(function(data){
+                if(data.next == "question") {
+                    $location.path("/"+$rp.qid+"/quizmaster/choosequestion");
+                    $scope.$apply();
+                } else if(data.next == "round") {
+                    $location.path("/"+$rp.qid+"/quizmaster/choosecats");
+                    $scope.$apply();
+                } else {
+                    console.log(data);
+                }
+            })
+            .catch(function(err){
+                console.error(err);
+            });
+    };
+}]);
+
+app.controller("scoreboardStartController", ["quizProvider","$scope", "webSocketProvider",function(qp,$scope, wsp){
+    var ssc = this;
+    ssc.quiz = {};
+
+    qp.getQuiz()
+        .then(function(data){
+            ssc.quiz = data;
+            $scope.$apply();
+        })
+        .catch(function(err){
+            console.error(err);
+        });
+
+    wsp.onmessage = function(msg) {
+        var data = JSON.parse(msg);
+
+        if(data.event){
+            ssc.next = data.event == "next";
+            qp.getQuiz()
+                .then(function(data){
+                    ssc.quiz = data;
+                    $scope.$apply();
+                })
+        }
+    };
+
+    ssc.getQuestionNumber = function() {
+        if(ssc.quiz.currentround && ssc.quiz.currentround.totalquestions) {
+            return ssc.quiz.currentround.totalquestions;
+        } else {
+            return 0;
+        }
+    };
+
+    ssc.getTeamColor = function(team) {
+        if(team.judged && team.judged == "right") {
+            return "green";
+        } else {
+            return "red";
+        }
+    };
+
 }]);

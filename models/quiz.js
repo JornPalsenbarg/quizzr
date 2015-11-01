@@ -37,7 +37,8 @@ var QuizSchema = new Schema({
             required: true
         },
         currentanswer: String,
-        rightanswers: Number
+        rightanswers: Number,
+        judged: String
     }],
     currentround: {
         categories: {

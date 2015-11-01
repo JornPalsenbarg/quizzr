@@ -16,6 +16,55 @@ var Category = mongoose.model("Category");
 
 router.use(bodyParser.json());
 
+router.get("/quiz/:id", function(req,res){
+    Quiz.findOne({
+        uid: req.params.id
+    }, function(err, doc){
+        if(err) {
+            console.log(err);
+            res.status(500);
+            res.send({
+                err: err.message
+            });
+        } else {
+            if(doc) {
+                res.send(doc);
+            } else {
+                res.status(404);
+                res.send({
+                    err: "No QuizZ found."
+                });
+            }
+        }
+    });
+});
+
+router.use("/quiz/:id",function(req,res, next) {
+    if(req.params.id) {
+        Quiz.findOne({
+            uid: req.params.id
+        }, function (err, doc) {
+            if (err) {
+                console.log(err);
+                res.status(500);
+                res.send({
+                    err: err.message
+                });
+            } else {
+                if (doc && doc.ended) {
+                    res.send({
+                        err: "GAME ENDED"
+                    })
+                } else {
+                    next();
+                }
+            }
+        });
+    } else {
+        next();
+    }
+});
+
 router.get("/quiz/new", function(req,res){
     function generateUid() {
         var charSet = charSet || 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -106,7 +155,6 @@ router.put("/quiz/:id", function(req,res) {
                             second: mongoose.Types.ObjectId(req.body.categories.second),
                             third: mongoose.Types.ObjectId(req.body.categories.third)
                         },
-                        pastquestions: [],
                         currentcategory: "",
                         questionopen: false,
                         currentquestion: {
@@ -146,11 +194,11 @@ router.put("/quiz/:id", function(req,res) {
                         err: err.message
                     });
                 } else {
-                    doc.currentround = {
-                        currentquestion: req.body.question,
-                        questionopen: true,
-                        totalquestions: doc.currentround.totalquestions + 1
-                    };
+                    doc.currentround.currentcategory = req.body.question.category;
+                    doc.currentround.currentquestion = req.body.question;
+                    doc.currentround.questionopen = true;
+                    doc.currentround.totalquestions += 1;
+                    doc.currentround.pastquestions.push(req.body.question.question);
                     doc.save(function(err){
                         if(err){
                             console.log(err);
@@ -170,6 +218,145 @@ router.put("/quiz/:id", function(req,res) {
                     })
                 }
             });
+            break;
+        case "stopAnswerAccepting":
+            Quiz.findOne({
+                uid: req.params.id
+            }, function(err, doc){
+                if(err){
+                    console.log(err);
+                    res.status(500);
+                    res.send({
+                        err: err.message
+                    });
+                } else {
+                    doc.currentround.questionopen = false;
+                    doc.save(function(err){
+                        if(err){
+                            console.log(err);
+                            res.status(500);
+                            res.send({
+                                err: err.message
+                            });
+                        } else {
+                            res.app.emit("webSockEvent", {
+                                qid: req.params.id,
+                                event: "questionStopped"
+                            });
+                            res.send({
+                                questionStopped: "yes"
+                            });
+                        }
+                    })
+                }
+            });
+            break;
+        case "next":
+            Quiz.findOne({
+                uid: req.params.id
+            }, function(err, doc){
+                if(err){
+                    console.log(err);
+                    res.status(500);
+                    res.send({
+                        err: err.message
+                    });
+                } else {
+                    doc.teams.forEach(function(team){
+                        var i = doc.teams.indexOf(team);
+                        if(team.judged == "right") {
+                            doc.teams[i].rightanswers += 1;
+                        }
+                        doc.teams[i].judged = "no";
+                        doc.teams[i].currentanswer = "";
+                    });
+                    doc.currentround.currentcategory = "";
+                    doc.currentround.currentquestion = {
+                        question: "",
+                        answer: ""
+                    };
+
+                    // 40, 20, 10, 1
+
+                    var nextVar = "";
+                    if(doc.currentround.totalquestions >= 3) {
+                        var rps = [40,20,10,1,1,1];
+
+                        doc.teams.sort(function(a,b) {
+                            return b.rightanswers - a.rightanswers;
+                        });
+
+                        doc.teams.forEach(function(team){
+                            var i = doc.teams.indexOf(team);
+                            console.log(team.name, i);
+                            doc.teams[i].rightanswers = 0;
+                            doc.teams[i].roundpoints += rps[i];
+                        });
+
+                        doc.teams.sort(function(a,b) {
+                            return b.roundpoints - a.roundpoints;
+                        });
+
+                        doc.currentround.categories = {};
+                        doc.currentround.totalquestions = 0;
+                        nextVar = "round";
+                    } else {
+                        nextVar = "question";
+                    }
+
+                    doc.save(function(err){
+                        if(err){
+                            console.log(err);
+                            res.status(500);
+                            res.send({
+                                err: err.message
+                            });
+                        } else {
+                            res.app.emit("webSockEvent", {
+                                qid: req.params.id,
+                                event: "next"
+                            });
+                            res.send({
+                                next: nextVar
+                            });
+                        }
+                    })
+                }
+            });
+            break;
+        case "end":
+            Quiz.findOne({
+                uid: req.params.id
+            }, function(err, doc){
+                if(err){
+                    console.log(err);
+                    res.status(500);
+                    res.send({
+                        err: err.message
+                    });
+                } else {
+                    doc.ended = true;
+                    doc.enddate = Date.now();
+                    doc.save(function(err){
+                        if(err){
+                            console.log(err);
+                            res.status(500);
+                            res.send({
+                                err: err.message
+                            });
+                        } else {
+                            res.app.emit("webSockEvent", {
+                                qid: req.params.id,
+                                event: "gameEnded"
+                            });
+                            res.send({
+                                gameEnded: "yes"
+                            });
+                        }
+                    })
+                }
+            });
+            break;
     }
 });
 
@@ -434,12 +621,10 @@ router.put("/quiz/:id/team/:name", function(req,res) {
                         docs.teams.forEach(function (team) {
                             if (team.name == req.params.name) {
                                 docs.teams.splice(docs.teams.indexOf(team),1);
-                                //docs.teams[docs.teams.indexOf(team)].accepted = false;
                             }
                         });
                     } else if(docs.teams && docs.teams[0].name == req.params.name) {
                         docs.teams.splice(0,1);
-                        //docs.teams[0].accepted = false;
                     }
                     docs.save(function(err){
                         if(err){
@@ -461,24 +646,62 @@ router.put("/quiz/:id/team/:name", function(req,res) {
                 }
             });
             break;
+        case "judgeAnswer":
+            Quiz.findOne({
+                $and: [
+                    {
+                        uid: req.params.id
+                    },
+                    {
+                        teams: {
+                            $elemMatch: {
+                                name: req.params.name
+                            }
+                        }
+                    }
+                ]
+            }, function(err, docs){
+                if(err) {
+                    console.log(err);
+                    res.status(500);
+                    res.send({err: err.message});
+                } else {
+                    if(docs.teams && docs.teams.length > 1) {
+                        docs.teams.forEach(function (team) {
+                            if (team.name == req.params.name) {
+                                docs.teams[docs.teams.indexOf(team)].judged = req.body.judge;
+                            }
+                        });
+                    } else if(docs.teams && docs.teams[0].name == req.params.name) {
+                        docs.teams[0].judged = req.body.judge;
+                    }
+                    docs.save(function(err){
+                        if(err){
+                            res.status(500);
+                            res.send({err: err.message});
+                        } else {
+                            res.app.emit("webSockEvent", {
+                                qid: req.params.id,
+                                event: "answerAcceptDeny",
+                                extra: {
+                                    teamname: req.params.name
+                                }
+                            });
+                            res.send({
+                                done: "yes"
+                            });
+                        }
+                    });
+                }
+            });
+            break;
     }
 });
 
 router.put("/quiz/:id/team/:name/answer", function(req,res) {
     req.params.name = req.params.name.replace("_", " ");
     Quiz.findOne({
-        $and: [
-            {
-                uid: req.params.id
-            },
-            {
-                teams: {
-                    $elemMatch: {
-                        name: req.params.name
-                    }
-                }
-            }
-        ]
+        uid: req.params.id
     }, function(err, docs){
         if(err) {
             console.log(err);
@@ -486,9 +709,18 @@ router.put("/quiz/:id/team/:name/answer", function(req,res) {
             res.send({err: err.message});
         } else {
             if(docs.teams.length > 0) {
-                docs.teams[0].currentanswer = req.body.answer;
+                var found = false;
+                docs.teams.forEach(function (team) {
+                    if (team.name == req.params.name) {
+                        docs.teams[docs.teams.indexOf(team)].currentanswer = req.body.answer;
+                        found = true;
+                    }
+                });
+                if(!found) {
+                    res.send({err: "No team found"});
+                }
             } else {
-                res.send({err: "No team found"})
+                res.send({err: "No team found"});
             }
             docs.save(function(err){
                 if(err){

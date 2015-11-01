@@ -1,0 +1,26 @@
+{
+  "name": "quizzr",
+  "version": "1.0",
+  "homepage": "https://github.com/JornPalsenbarg/quizzr",
+  "authors": [
+    "Jorn Palsenbarg"
+  ],
+  "description": "Quizzr",
+  "main": "",
+  "moduleType": [
+    "node"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular-route": "~1.4.7",
+    "angular": "~1.4.7",
+    "Materialize": "materialize#~0.97.1"
+  }
+}
