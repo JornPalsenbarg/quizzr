@@ -4,7 +4,7 @@ var bodyParser = require("body-parser");
 var Hashids = require("hashids");
 
 var mongoose = require("mongoose");
-mongoose.connect("mongodb://localhost/quizzr")
+mongoose.connect("mongodb://localhost/quizzr");
 
 var hashids = new Hashids("tastes a bit salty", 4);
 
@@ -15,6 +15,44 @@ var Quiz = mongoose.model("Quiz");
 var Category = mongoose.model("Category");
 
 router.use(bodyParser.json());
+
+router.get("/quiz/new", function(req,res){
+    function generateUid() {
+        var charSet = charSet || 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        var randomString = '';
+        for (var i = 0; i < 3; i++) {
+            var randomPoz = Math.floor(Math.random() * charSet.length);
+            randomString += charSet.substring(randomPoz,randomPoz+1);
+        }
+        var timestamp = new Date().getUTCMilliseconds();
+        return hashids.encode(timestamp) + randomString;
+    }
+
+    var uid = generateUid();
+
+    var newQ = new Quiz({
+        uid: uid,
+        started: false,
+        ended: false,
+        startdate: Date.now(),
+        totalrounds: 0
+    });
+
+    newQ.save(function(err){
+        if(err){
+            console.log("error creating new quiz: ", err.message);
+            res.status(500);
+            res.send({
+                err: "Not able to save new quiz"
+            });
+        } else {
+            console.log("new quiz created with uid: " + uid);
+            res.send({
+                id: uid
+            });
+        }
+    });
+});
 
 router.get("/quiz/:id", function(req,res){
     Quiz.findOne({
@@ -63,44 +101,6 @@ router.use("/quiz/:id",function(req,res, next) {
     } else {
         next();
     }
-});
-
-router.get("/quiz/new", function(req,res){
-    function generateUid() {
-        var charSet = charSet || 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        var randomString = '';
-        for (var i = 0; i < 3; i++) {
-            var randomPoz = Math.floor(Math.random() * charSet.length);
-            randomString += charSet.substring(randomPoz,randomPoz+1);
-        }
-        var timestamp = new Date().getUTCMilliseconds();
-        return hashids.encode(timestamp) + randomString;
-    }
-
-    var uid = generateUid();
-
-    var newQ = new Quiz({
-        uid: uid,
-        started: false,
-        ended: false,
-        startdate: Date.now(),
-        totalrounds: 0
-    });
-
-    newQ.save(function(err){
-        if(err){
-            console.log("error creating new quiz: ", err.message);
-            res.status(500);
-            res.send({
-                err: "Not able to save new quiz"
-            });
-        } else {
-            console.log("new quiz created with uid: " + uid);
-            res.send({
-                id: uid
-            });
-        }
-    });
 });
 
 router.put("/quiz/:id", function(req,res) {
