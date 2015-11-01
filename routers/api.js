@@ -279,7 +279,7 @@ router.put("/quiz/:id", function(req,res) {
                     // 40, 20, 10, 1
 
                     var nextVar = "";
-                    if(doc.currentround.totalquestions >= 3) {
+                    if(doc.currentround.totalquestions >= 12) {
                         var rps = [40,20,10,1,1,1];
 
                         doc.teams.sort(function(a,b) {
