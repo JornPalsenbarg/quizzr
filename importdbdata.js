@@ -2,7 +2,7 @@ var fs = require("fs");
 var mongoose = require("mongoose");
 mongoose.connect("mongodb://localhost/quizzr");
 
-require("models/category");
+require("./models/category");
 
 var Category = mongoose.model("Category");
 
